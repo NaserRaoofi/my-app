@@ -60,9 +60,7 @@ module "networking" {
 
   # Networking configuration
   vpc_cidr           = var.vpc_cidr
-  enable_nat_gateway = var.enable_nat_gateway
-  single_nat_gateway = var.single_nat_gateway
-  enable_flow_log    = var.enable_flow_log
+
 }
 
 # TODO: Add other services when ready

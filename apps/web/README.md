@@ -3,6 +3,7 @@
 This directory will contain the web application code.
 
 ## Structure
+
 - `src/` - Source code
 - `public/` - Static assets
 - `components/` - Reusable components
@@ -11,6 +12,7 @@ This directory will contain the web application code.
 - `Dockerfile` - Container build instructions
 
 ## Getting Started
+
 ```bash
 # Install dependencies
 npm install

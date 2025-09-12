@@ -6,7 +6,7 @@
 # It calls the VPC module with environment-specific configuration
 
 module "vpc" {
-  source = "../../../modules/vpc"
+  source = "git::https://github.com/NaserRaoofi/terraform-modules.git//modules/networking"
 
   # ================================
   # ✅ ENABLED RESOURCES
@@ -24,20 +24,11 @@ module "vpc" {
   public_subnets   = [for k, v in var.azs : cidrsubnet(var.vpc_cidr, 8, k + 101)]
   database_subnets = [for k, v in var.azs : cidrsubnet(var.vpc_cidr, 8, k + 201)]
 
-  # Internet connectivity - Essential
-  enable_nat_gateway = var.enable_nat_gateway
-  single_nat_gateway = var.single_nat_gateway
-
+  # Internet connectivity - Essential=
   # DNS - Essential
   enable_dns_hostnames = true
   enable_dns_support   = true
 
-  # Flow Logs
-  enable_flow_log                                = var.enable_flow_log
-  flow_log_destination_type                      = var.enable_flow_log ? "cloud-watch-logs" : null
-  create_flow_log_cloudwatch_log_group          = var.enable_flow_log
-  create_flow_log_cloudwatch_iam_role           = var.enable_flow_log
-  flow_log_cloudwatch_log_group_retention_in_days = 30
 
   # Essential route tables
   manage_default_route_table = true
@@ -68,9 +59,13 @@ module "vpc" {
   # ❌ EXPLICITLY DISABLED RESOURCES
   # ================================
 
+
+  # NAT Gateway disabled
+  enable_nat_gateway = false
+  single_nat_gateway = false
+
   # IPv6 - Not needed for basic setup
   enable_ipv6                                = false
-  assign_generated_ipv6_cidr_block          = false
   public_subnet_assign_ipv6_address_on_creation  = false
   private_subnet_assign_ipv6_address_on_creation = false
 
@@ -82,7 +77,6 @@ module "vpc" {
 
   # Route table options - Keep simple
   create_multiple_public_route_tables  = false
-  create_multiple_private_route_tables = false
   create_multiple_intra_route_tables   = false
 
   # Advanced networking - Disabled
@@ -102,10 +96,6 @@ module "vpc" {
 
   # Customer Gateway - Not needed
   customer_gateways = {}
-
-  # VPC Endpoints - Add only when needed
-  enable_s3_endpoint        = false
-  enable_dynamodb_endpoint  = false
 
   # Default security group - Manage separately
   manage_default_security_group = false

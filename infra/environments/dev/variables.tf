@@ -41,42 +41,4 @@ variable "vpc_cidr" {
   default     = "10.0.0.0/16"
 }
 
-variable "enable_nat_gateway" {
-  description = "Enable NAT Gateway for private subnets"
-  type        = bool
-  default     = true
-}
 
-variable "single_nat_gateway" {
-  description = "Use a single NAT Gateway for all private subnets (cost optimization)"
-  type        = bool
-  default     = true
-}
-
-variable "enable_flow_log" {
-  description = "Enable VPC Flow Logs"
-  type        = bool
-  default     = true
-}
-
-################################################################################
-# Feature Flags
-################################################################################
-
-variable "enable_compute" {
-  description = "Enable compute resources (EC2, EKS)"
-  type        = bool
-  default     = false
-}
-
-variable "enable_storage" {
-  description = "Enable storage resources (RDS, S3)"
-  type        = bool
-  default     = false
-}
-
-variable "enable_monitoring" {
-  description = "Enable monitoring resources (CloudWatch, alerts)"
-  type        = bool
-  default     = false
-}

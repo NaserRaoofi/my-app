@@ -33,7 +33,6 @@ output "networking" {
     database_subnets          = module.networking.database_subnets
     database_subnet_group_name = module.networking.database_subnet_group_name
     internet_gateway_id       = module.networking.igw_id
-    nat_gateway_ips          = module.networking.nat_public_ips
   }
   sensitive = false
 }
@@ -59,21 +58,3 @@ output "database_subnet_group_name" {
   value       = module.networking.database_subnet_group_name
 }
 
-################################################################################
-# Future Service Outputs (when enabled)
-################################################################################
-
-# output "compute" {
-#   description = "Compute module outputs"
-#   value       = var.enable_compute ? module.compute[0] : null
-# }
-
-# output "storage" {
-#   description = "Storage module outputs"
-#   value       = var.enable_storage ? module.storage[0] : null
-# }
-
-# output "monitoring" {
-#   description = "Monitoring module outputs"
-#   value       = var.enable_monitoring ? module.monitoring[0] : null
-# }
