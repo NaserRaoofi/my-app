@@ -63,7 +63,33 @@ module "networking" {
 
 }
 
-# TODO: Add other services when ready
-# module "compute" { ... }
-# module "storage" { ... }
-# module "monitoring" { ... }
+# Compute - EKS (disabled by default; set create=true to enable)
+module "eks" {
+  source = "./services/compute/eks"
+
+  # Safety switch
+  create = true
+
+  # Env
+  environment = var.environment
+  project_name = var.project_name
+  name_prefix  = local.name_prefix
+  common_tags  = local.common_tags
+  region       = var.aws_region
+
+  # Networking
+  vpc_id             = module.networking.vpc_id
+  private_subnet_ids = module.networking.private_subnets
+  public_subnet_ids  = module.networking.public_subnets
+
+  # Cluster settings
+  cluster_version         = null
+  enable_irsa             = true
+  endpoint_public_access  = false
+  enabled_log_types       = []
+
+  # Addons (can be overridden at call site)
+  addons = null
+}
+
+# TODO: Add other services when ready (storage, monitoring, etc.)

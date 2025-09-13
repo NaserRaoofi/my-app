@@ -24,7 +24,9 @@ module "vpc" {
   public_subnets   = [for k, v in var.azs : cidrsubnet(var.vpc_cidr, 8, k + 101)]
   database_subnets = [for k, v in var.azs : cidrsubnet(var.vpc_cidr, 8, k + 201)]
 
-  # Internet connectivity - Essential=
+  # Internet connectivity - Essential
+  # Auto-assign public IPs for public subnets (required for EKS nodes)
+  map_public_ip_on_launch = true
   # DNS - Essential
   enable_dns_hostnames = true
   enable_dns_support   = true
