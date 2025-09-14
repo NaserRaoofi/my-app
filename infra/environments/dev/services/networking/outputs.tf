@@ -58,3 +58,31 @@ output "nat_public_ips" {
   description = "List of public Elastic IPs created for AWS NAT Gateway"
   value       = module.vpc.nat_public_ips
 }
+
+################################################################################
+# Route Tables
+################################################################################
+
+output "private_route_table_ids" {
+  description = "List of IDs of the private route tables"
+  value       = module.vpc.private_route_table_ids
+}
+
+output "public_route_table_ids" {
+  description = "List of IDs of the public route tables"
+  value       = module.vpc.public_route_table_ids
+}
+
+################################################################################
+# VPC Endpoints
+################################################################################
+
+output "vpc_endpoints" {
+  description = "VPC endpoints configuration"
+  value       = module.vpc_endpoints.endpoints
+}
+
+output "vpc_endpoints_security_group_id" {
+  description = "Security group ID for VPC endpoints"
+  value       = module.vpc_endpoints.security_group_id
+}

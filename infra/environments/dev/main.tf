@@ -63,6 +63,7 @@ module "networking" {
 
 }
 
+
 # Compute - EKS (disabled by default; set create=true to enable)
 module "eks" {
   source = "./services/compute/eks"
@@ -83,9 +84,9 @@ module "eks" {
   public_subnet_ids  = module.networking.public_subnets
 
   # Cluster settings
-  cluster_version         = null
+  cluster_version         = "1.31"
   enable_irsa             = true
-  endpoint_public_access  = false
+  endpoint_public_access  = false  # Private-only cluster API (admin via SSM/VPN/DirectConnect)
   enabled_log_types       = []
 
   # Addons (can be overridden at call site)

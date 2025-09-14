@@ -58,3 +58,20 @@ output "database_subnet_group_name" {
   value       = module.networking.database_subnet_group_name
 }
 
+################################################################################
+# Bastion Outputs
+################################################################################
+
+output "bastion" {
+  description = "Bastion host information and connection details"
+  value = {
+    auto_scaling_group_name           = module.bastion.bastion_host_id
+    security_group_id                 = module.bastion.bastion_security_group_id
+    private_instances_security_group_id = module.bastion.private_instances_security_group_id
+    logs_bucket_name                  = module.bastion.bastion_logs_bucket_name
+    logs_bucket_arn                   = module.bastion.bastion_logs_bucket_arn
+    connection_info                   = module.bastion.bastion_connection_info
+    ssh_usage_examples               = module.bastion.ssh_usage_examples
+  }
+  sensitive = false
+}
