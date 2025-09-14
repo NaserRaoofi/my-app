@@ -41,4 +41,23 @@ variable "vpc_cidr" {
   default     = "10.0.0.0/16"
 }
 
+################################################################################
+# Bastion Host Variables
+################################################################################
 
+variable "bastion_key_pair_name" {
+  description = "EC2 Key Pair name for bastion host SSH access"
+  type        = string
+}
+
+variable "bastion_instance_type" {
+  description = "EC2 instance type for bastion host"
+  type        = string
+  default     = "t3.micro"
+}
+
+variable "bastion_allowed_cidrs" {
+  description = "List of CIDR blocks allowed to SSH to bastion host"
+  type        = list(string)
+  default     = ["0.0.0.0/0"]  # Restrict this in production!
+}

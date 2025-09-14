@@ -25,13 +25,42 @@ dev/
 
 ## 🚀 Quick Start
 
-### 1. Deploy Networking Only (Current)
+### 1. Prerequisites
+
+Create an EC2 key pair for bastion access:
+
+```bash
+aws ec2 create-key-pair --key-name my-key-pair --query 'KeyMaterial' --output text > ~/.ssh/my-key-pair.pem
+chmod 400 ~/.ssh/my-key-pair.pem
+```
+
+### 2. Deploy Infrastructure
 
 ```bash
 cd /home/sirwan/terr/infra/environments/dev
+
+# Update terraform.tfvars with your key pair name
+vim terraform.tfvars  # Set bastion_key_pair_name = "your-key-pair-name"
+
+# Deploy
 terraform init
 terraform plan
 terraform apply
+```
+
+### 3. Access Bastion Host
+
+After deployment:
+
+```bash
+# Get bastion public IP from outputs
+terraform output bastion
+
+# Add your SSH key to S3 bucket for access
+aws s3 cp ~/.ssh/your-key.pub s3://BUCKET-NAME/public-keys/username.pub
+
+# Connect to bastion
+ssh username@BASTION-PUBLIC-IP
 ```
 
 ### 2. Add More Services Later
@@ -55,10 +84,11 @@ terraform apply
 
 | Service       | Status          | Description                         |
 | ------------- | --------------- | ----------------------------------- |
-| 🌐 Networking | ✅ **Active**   | VPC, subnets, NAT, IGW              |
-| 💻 Compute    | ⏳ **Template** | EC2, EKS, ALB (ready to add)        |
+| 🌐 Networking | ✅ **Active**   | VPC, subnets, IGW (single AZ)       |
+| � Bastion     | ✅ **Active**   | SSH bastion host for private access |
+| 💻 EKS        | ✅ **Active**   | Kubernetes cluster                  |
 | 🗄️ Storage    | ⏳ **Template** | RDS, S3, DynamoDB (ready to add)    |
-| 🔒 Security   | ⏳ **Template** | Security Groups, IAM (ready to add) |
+| 🔒 Security   | ⏳ **Template** | Additional security services        |
 | 📊 Monitoring | ⏳ **Template** | CloudWatch, alarms (ready to add)   |
 
 ## 🎛️ Configuration
