@@ -64,7 +64,7 @@ variable "enable_irsa" {
 variable "endpoint_public_access" {
   description = "Whether to enable the public Kubernetes API endpoint"
   type        = bool
-  default     = false
+  default     = true
 }
 
 variable "enabled_log_types" {

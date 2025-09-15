@@ -9,13 +9,16 @@ locals {
 	default_addons = {
 		# Core EKS managed addons
 		vpc-cni = {
-			most_recent = true
+			most_recent    = true
+			before_compute = true
 		}
 		kube-proxy = {
-			most_recent = true
+			most_recent    = true
+			before_compute = true
 		}
 		coredns = {
-			most_recent = true
+			most_recent    = true
+			before_compute = true
 		}
 		# Storage driver - recommended for dynamic PVs
 		aws-ebs-csi-driver = {
@@ -36,12 +39,12 @@ module "eks" {
 
 	# Cluster
 	name                = local.name
-	kubernetes_version  = coalesce(var.cluster_version, "1.31")
+	kubernetes_version  = coalesce(var.cluster_version, "1.32")
 	vpc_id              = var.vpc_id
 	control_plane_subnet_ids = var.private_subnet_ids
 	subnet_ids               = var.private_subnet_ids
 
-	# Endpoints - keep private; public controlled by caller variable
+	# Endpoints
 	endpoint_private_access = true
 	endpoint_public_access  = var.endpoint_public_access
 
@@ -59,11 +62,19 @@ module "eks" {
 	# Access control - grant admin access to cluster creator
 	enable_cluster_creator_admin_permissions = true
 
-	# Addons - allow override; else use defaults above
+	# Addons - install core addons BEFORE nodegroups to prevent chicken-and-egg problem
 	addons = coalesce(var.addons, local.default_addons)
+
+	# Force addons to be created before nodegroups with longer timeouts
+	addons_timeouts = {
+		create = "20m"
+		update = "20m"
+		delete = "20m"
+	}
 
 	##############################################################################
 	# Node groups (EKS managed)
+	# These will be created AFTER cluster and addons are ready
 	##############################################################################
 
 eks_managed_node_groups = {
@@ -71,30 +82,27 @@ eks_managed_node_groups = {
     desired_size = 1
     min_size     = 1
     max_size     = 1
-    instance_types = ["t3.small"]
+    instance_types = ["t3.medium", "t3a.medium", "t3.small", "t3a.small"]
     labels = { role = "system" }
+
     taints = {
       CriticalAddonsOnly = {
-        key    = "CriticalAddonsOnly"
+        key    = "systempods"
         value  = "true"
         effect = "NO_SCHEDULE"
       }
     }
     subnet_ids = var.private_subnet_ids
     enable_bootstrap_user_data = true
-
-    # Enable SSM Session Manager access
-    iam_role_additional_policies = {
-      ssm = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
-    }
   }
 
   database = {
     desired_size = 1
     min_size     = 1
     max_size     = 1
-    instance_types = ["t3.small"]
+    instance_types = ["t3.medium", "t3a.medium", "t3.small", "t3a.small"]
     labels = { role = "database" }
+
     taints = {
       dedicated = {
         key    = "dedicated"
@@ -104,27 +112,18 @@ eks_managed_node_groups = {
     }
     subnet_ids = var.private_subnet_ids
     enable_bootstrap_user_data = true
-
-    # Enable SSM Session Manager access
-    iam_role_additional_policies = {
-      ssm = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
-    }
-	}
+  }
 
 	# General-purpose pool (untainted) in private subnets so core addons can schedule
 	general = {
 		desired_size = 1
 		min_size     = 1
-		max_size     = 2
-		instance_types = ["t3.small"]
+		max_size     = 1
+		instance_types = ["t3.small", "t3a.small", "t3.medium", "t3a.medium"]
 		labels = { role = "general" }
+
 		subnet_ids = var.private_subnet_ids
 		enable_bootstrap_user_data = true
-
-		# Enable SSM Session Manager access
-		iam_role_additional_policies = {
-			ssm = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
-		}
 	}
 }
 }

@@ -1,4 +1,42 @@
 ################################################################################
+# VPC Endpoints
+################################################################################
+
+output "vpc_endpoints" {
+  description = "VPC endpoints information"
+  value       = module.vpc_endpoints.endpoints
+}
+
+################################################################################
+# Security Groups (from Security Service)
+################################################################################
+
+output "alb_security_group_id" {
+  description = "ID of the ALB security group"
+  value       = module.security.alb_security_group_id
+}
+
+output "eks_nodes_security_group_id" {
+  description = "ID of the EKS nodes security group"
+  value       = module.security.eks_nodes_security_group_id
+}
+
+output "bastion_security_group_id" {
+  description = "ID of the bastion security group"
+  value       = module.security.bastion_security_group_id
+}
+
+output "database_security_group_id" {
+  description = "ID of the database security group"
+  value       = module.security.database_security_group_id
+}
+
+output "vpc_endpoints_security_group_id" {
+  description = "ID of the VPC endpoints security group"
+  value       = module.security.vpc_endpoints_security_group_id
+}
+
+################################################################################
 # VPC
 ################################################################################
 
@@ -71,18 +109,4 @@ output "private_route_table_ids" {
 output "public_route_table_ids" {
   description = "List of IDs of the public route tables"
   value       = module.vpc.public_route_table_ids
-}
-
-################################################################################
-# VPC Endpoints
-################################################################################
-
-output "vpc_endpoints" {
-  description = "VPC endpoints configuration"
-  value       = module.vpc_endpoints.endpoints
-}
-
-output "vpc_endpoints_security_group_id" {
-  description = "Security group ID for VPC endpoints"
-  value       = module.vpc_endpoints.security_group_id
 }

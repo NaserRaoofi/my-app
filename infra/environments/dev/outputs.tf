@@ -27,12 +27,12 @@ output "networking" {
   value = {
     vpc_id                     = module.networking.vpc_id
     vpc_arn                    = module.networking.vpc_arn
-    vpc_cidr_block            = module.networking.vpc_cidr_block
-    private_subnets           = module.networking.private_subnets
-    public_subnets            = module.networking.public_subnets
-    database_subnets          = module.networking.database_subnets
+    vpc_cidr_block             = module.networking.vpc_cidr_block
+    private_subnets            = module.networking.private_subnets
+    public_subnets             = module.networking.public_subnets
+    database_subnets           = module.networking.database_subnets
     database_subnet_group_name = module.networking.database_subnet_group_name
-    internet_gateway_id       = module.networking.igw_id
+    internet_gateway_id        = module.networking.igw_id
   }
   sensitive = false
 }
@@ -58,20 +58,3 @@ output "database_subnet_group_name" {
   value       = module.networking.database_subnet_group_name
 }
 
-################################################################################
-# Bastion Outputs
-################################################################################
-
-output "bastion" {
-  description = "Bastion host information and connection details"
-  value = {
-    auto_scaling_group_name           = module.bastion.bastion_host_id
-    security_group_id                 = module.bastion.bastion_security_group_id
-    private_instances_security_group_id = module.bastion.private_instances_security_group_id
-    logs_bucket_name                  = module.bastion.bastion_logs_bucket_name
-    logs_bucket_arn                   = module.bastion.bastion_logs_bucket_arn
-    connection_info                   = module.bastion.bastion_connection_info
-    ssh_usage_examples               = module.bastion.ssh_usage_examples
-  }
-  sensitive = false
-}

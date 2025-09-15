@@ -30,11 +30,11 @@ locals {
 
   # Common tags for all resources
   common_tags = {
-    Environment  = var.environment
-    Project      = var.project_name
-    CostCenter   = var.cost_center
-    ManagedBy    = "terraform"
-    Owner        = "infrastructure-team"
+    Environment = var.environment
+    Project     = var.project_name
+    CostCenter  = var.cost_center
+    ManagedBy   = "terraform"
+    Owner       = "Naser"
   }
 }
 
@@ -52,19 +52,19 @@ module "networking" {
   source = "./services/networking"
 
   # Environment configuration
-  environment   = var.environment
-  project_name  = var.project_name
-  name_prefix   = local.name_prefix
-  azs           = local.azs
-  common_tags   = local.common_tags
+  environment  = var.environment
+  project_name = var.project_name
+  name_prefix  = local.name_prefix
+  azs          = local.azs
+  common_tags  = local.common_tags
 
   # Networking configuration
-  vpc_cidr           = var.vpc_cidr
-
+  vpc_cidr = var.vpc_cidr
 }
 
 
-# Compute - EKS (disabled by default; set create=true to enable)
+# Compute - EKS (enabled)
+
 module "eks" {
   source = "./services/compute/eks"
 
@@ -72,7 +72,7 @@ module "eks" {
   create = true
 
   # Env
-  environment = var.environment
+  environment  = var.environment
   project_name = var.project_name
   name_prefix  = local.name_prefix
   common_tags  = local.common_tags
@@ -84,13 +84,14 @@ module "eks" {
   public_subnet_ids  = module.networking.public_subnets
 
   # Cluster settings
-  cluster_version         = "1.31"
-  enable_irsa             = true
-  endpoint_public_access  = false  # Private-only cluster API (admin via SSM/VPN/DirectConnect)
-  enabled_log_types       = []
+  cluster_version        = "1.32"
+  enable_irsa            = true
+  endpoint_public_access = false # Private-only cluster API (admin via SSM/VPN/DirectConnect)
+  enabled_log_types      = []
 
   # Addons (can be overridden at call site)
   addons = null
 }
 
 # TODO: Add other services when ready (storage, monitoring, etc.)
+
