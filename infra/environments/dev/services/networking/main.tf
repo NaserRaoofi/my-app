@@ -5,6 +5,8 @@
 # This service manages all networking resources for the environment
 # It calls the VPC module with environment-specific configuration
 
+
+
 module "vpc" {
   source = "github.com/NaserRaoofi/terraform-aws-modules//modules/networking?ref=main"
 
@@ -26,18 +28,21 @@ module "vpc" {
   # Internet connectivity - Essential for public subnet
   map_public_ip_on_launch = true  # Auto-assign public IPs in public subnet
 
+  # Internet Gateway - Required for public subnet internet access
+  create_igw = true
+    # NAT Gateway disabled; rely on VPC endpoints + bastion for private access
+  single_nat_gateway = true
   # DNS - Essential for proper hostname resolution
   enable_dns_hostnames = true
   enable_dns_support   = true
-
-  # Internet Gateway - Required for public subnet internet access
-  create_igw = true
 
   # Route tables - Best practice configuration
   manage_default_route_table = true
   default_route_table_tags = {
     Name = "${var.name_prefix}-default-rt"
   }
+
+
 
   # Tags
   tags = var.common_tags
@@ -73,9 +78,8 @@ module "vpc" {
   create_egress_only_igw = false
   create_elasticache_subnet_group = false  # Default: true
   create_redshift_subnet_group = false
-  # NAT Gateway - Disabled (using bastion for private subnet internet access)
-  # NAT disabled; rely on VPC endpoints + bastion for private access
-  enable_nat_gateway = false
+  # NAT Gateway - ENABLED (single NAT for cost optimization)
+  enable_nat_gateway = true
 
   # ================================
   # 🛡️ SECURITY FLAGS
@@ -93,30 +97,9 @@ module "vpc_endpoints" {
   vpc_id     = module.vpc.vpc_id
   subnet_ids = module.vpc.private_subnets
 
-  # Security group for VPC endpoints
-  create_security_group = true
-  security_group_name   = "${var.name_prefix}-vpc-endpoints-sg"
-  security_group_description = "Security group for VPC endpoints"
-
-  # Security group rules - allow HTTPS from private subnets
-  security_group_rules = {
-    ingress_https = {
-      description = "HTTPS from private subnets"
-      type        = "ingress"
-      from_port   = 443
-      to_port     = 443
-      protocol    = "tcp"
-      cidr_blocks = module.vpc.private_subnets_cidr_blocks
-    }
-    egress_all = {
-      description = "All outbound traffic"
-      type        = "egress"
-      from_port   = 0
-      to_port     = 0
-      protocol    = "-1"
-      cidr_blocks = ["0.0.0.0/0"]
-    }
-  }
+  # Use centralized security group from security service
+  create_security_group      = true
+  security_group_ids         = [module.security.vpc_endpoints_security_group_id]
 
   # Essential endpoints for EKS
   endpoints = {
@@ -153,37 +136,45 @@ module "vpc_endpoints" {
       tags = { Name = "${var.name_prefix}-eks" }
     }
 
-    sts = {
-      service = "sts"
-      private_dns_enabled = true
-      tags = { Name = "${var.name_prefix}-sts" }
-    }
 
-    logs = {
-      service = "logs"
-      private_dns_enabled = true
-      tags = { Name = "${var.name_prefix}-logs" }
-    }
 
-    ssm = {
-      service = "ssm"
-      private_dns_enabled = true
-      tags = { Name = "${var.name_prefix}-ssm" }
-    }
 
-    # Additional endpoints required for SSM Session Manager
-    ssmmessages = {
-      service = "ssmmessages"
-      private_dns_enabled = true
-      tags = { Name = "${var.name_prefix}-ssmmessages" }
-    }
-
-    ec2messages = {
-      service = "ec2messages"
-      private_dns_enabled = true
-      tags = { Name = "${var.name_prefix}-ec2messages" }
-    }
   }
 
   tags = var.common_tags
+}
+
+################################################################################
+# Security Groups from Security Service
+################################################################################
+
+# Call security service to create security groups with VPC ID
+module "security" {
+  source = "../security"
+
+  # Pass required variables to security service
+  name_prefix = var.name_prefix
+  vpc_id      = module.vpc.vpc_id  # Now VPC is created
+  vpc_cidr    = var.vpc_cidr
+  common_tags = var.common_tags
+
+  # ================================
+  # 🛡️ NETWORK ACL CONFIGURATION
+  # ================================
+  # NACL Controls - Set to true/false as needed (these are processed from JSON)
+  create_default_nacl  = false     # Enable for default NACL management
+  create_public_nacl   = false     # Enable for public subnet dedicated NACLs
+  create_private_nacl  = false     # Enable for private subnet dedicated NACLs
+  create_database_nacl = false     # Enable for database subnet NACLs
+  database_subnet_ids  = []        # Pass database subnet IDs when enabled
+
+  # ================================
+  # 🛡️ SECURITY GROUP CONFIGURATION
+  # ================================
+  # Individual Security Group Controls - Set to true/false as needed
+  create_alb_sg           = false   # Enable for Application Load Balancer
+  create_eks_nodes_sg     = true    # Enable for EKS worker nodes
+  create_bastion_sg       = false   # Enable for bastion host
+  create_database_sg      = false   # Enable for RDS databases
+  create_vpc_endpoints_sg = true    # Enable for VPC endpoints (needed for current setup)
 }
